@@ -14,6 +14,7 @@ import { ToastrModule } from 'ngx-toastr';
 import { HomeComponent } from './home/home.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { PostTileComponent } from './shared/post-tile/post-tile.component';
+import { VoteButtonComponent } from './shared/vote-button/vote-button.component';
 
 @NgModule({
   declarations: [
@@ -22,7 +23,8 @@ import { PostTileComponent } from './shared/post-tile/post-tile.component';
     SignupComponent,
     LoginComponent,
     HomeComponent,
-    PostTileComponent
+    PostTileComponent,
+    VoteButtonComponent
 
   ],
   imports: [
