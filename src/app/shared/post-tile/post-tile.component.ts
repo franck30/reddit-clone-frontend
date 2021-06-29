@@ -1,4 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { PostModel } from '../post-model';
+import { PostService } from '../post.service';
+import {faArrowUp, faArrowDown, faComments} from '@fortawesome/free-solid-svg-icons'
+
 
 @Component({
   selector: 'app-post-tile',
@@ -6,8 +10,17 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./post-tile.component.css']
 })
 export class PostTileComponent implements OnInit {
+  posts$: Array<PostModel>;
 
-  constructor() { }
+
+  faComments = faComments;
+
+  constructor(private postService: PostService) {
+    this.postService.getAllPosts().subscribe(post => {
+      this.posts$ = post;
+    });
+   }
+
 
   ngOnInit(): void {
   }

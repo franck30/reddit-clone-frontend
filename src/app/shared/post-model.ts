@@ -3,7 +3,7 @@ export class PostModel {
   postName: string;
   url: string;
   description: string;
-  votecount: number;
+  voteCount: number;
   userName: string;
   subredditName: string;
   commentCount: number;
