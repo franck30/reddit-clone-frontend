@@ -1,7 +1,7 @@
 import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { BehaviorSubject, Observable, throwError } from "rxjs";
-import { catchError, switchMap } from "rxjs/operators";
+import { catchError, filter, switchMap, take } from "rxjs/operators";
 import { LoginResponse } from "./auth/login/loginResponse.payload";
 // import {Injectable} from '@angular/common/http'
 import { AuthService } from "./auth/shared/auth.service";
@@ -11,7 +11,7 @@ import { AuthService } from "./auth/shared/auth.service";
 })
 
 export class TokenInterceptor implements HttpInterceptor {
-  isTokenRefreshing: boolean;
+  isTokenRefreshing = false;
   refreshTokenSubject: BehaviorSubject<any> = new BehaviorSubject(null);
 
 
@@ -22,17 +22,21 @@ export class TokenInterceptor implements HttpInterceptor {
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
 
+    if (req.url.indexOf('refresh') !== -1 || req.url.indexOf('login') !== -1) {
+      return next.handle(req);
+  }
     const jwtToken = this.authService.getJwtToken();
+
     if (jwtToken) {
-      this.addToken(req, jwtToken)
-    }
-    return next.handle(req).pipe(catchError(error => {
+    return next.handle(this.addToken(req, jwtToken)).pipe(catchError(error => {
       if (error instanceof HttpErrorResponse && error.status === 403) {
         return this.handleAuthErrors(req, next);
       } else {
         return throwError(error);
       }
     }));
+  }
+    return next.handle(req);
   }
 
 
@@ -50,7 +54,16 @@ export class TokenInterceptor implements HttpInterceptor {
             refreshTokenResponse.authenticationToken));
         })
       )
-    }
+    } else {
+      return this.refreshTokenSubject.pipe(
+          filter(result => result !== null),
+          take(1),
+          switchMap((res) => {
+              return next.handle(this.addToken(req,
+                  this.authService.getJwtToken()))
+          })
+      );
+  }
   }
 
 
@@ -58,7 +71,7 @@ export class TokenInterceptor implements HttpInterceptor {
 
     return req.clone({
       headers: req.headers.set('Authorization',
-          'Bearer'+ jwtToken)
+          'Bearer '+ jwtToken)
     });
   }
 
